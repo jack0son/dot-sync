@@ -1,11 +1,10 @@
-package main
+package lib
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/jgitgud/dot-sync/app"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -14,9 +13,9 @@ const CONFIG_FILE_NAME = "dotsync.conf"
 
 // Repository
 type Repo struct {
-	apps   []app.App
-	dir    string // Path to repo directory
-	config RepoConfig
+	apps []app.App
+	Dir  string // Path to repo directory
+	//config RepoConfig
 }
 
 func (r *Repo) add(appName string, paths []string) error {
@@ -47,7 +46,7 @@ func LoadRepo(configFile string) (*Repo, error) {
 	fmt.Println(cf)
 
 	decoder := json.NewDecoder(cf)
-	repoConfig = new(RepoConfig)
+	repoConfig := new(RepoConfig)
 
 	if err := decoder.Decode(repoConfig); err != nil {
 		return nil, errors.New("could not decode config json")
@@ -73,7 +72,7 @@ func (r *Repo) store() error {
 	}
 
 	rc := RepoConfig{
-		Dir:  r.dir,
+		Dir:  r.Dir,
 		Apps: appConfigs,
 	}
 
@@ -82,7 +81,7 @@ func (r *Repo) store() error {
 		return fmt.Errorf("Failed to marshal config json with error %v", err)
 	}
 
-	file, err := os.Create(filepath.Join(r.dir, CONFIG_FILE_NAME))
+	file, err := os.Create(filepath.Join(r.Dir, CONFIG_FILE_NAME))
 	if err != nil {
 		return fmt.Errorf("Failed to write with error %v", err)
 	}
@@ -108,25 +107,29 @@ type FileConfig struct {
 }
 
 func (rc *RepoConfig) Load() *Repo {
-	repo := new(repo)
+	repo := new(Repo)
 	repo.Dir = rc.Dir
 
-	apps := make([]app.App, len(repo.Apps))
+	apps := make([]app.App, len(rc.Apps))
+	count := 0
 	for name, appConfig := range rc.Apps {
 
 		files := make([]app.File, len(appConfig))
 		for i, fileConfig := range appConfig {
-			files[i] = app.File{
-				fileConfig.Name,
-				fileConfig.Dir,
-			}
+			file := new(app.File)
+			file.Name = fileConfig.Name
+			file.Dir = fileConfig.Dir
+			files[i] = *file
 		}
 
-		apps[i] = app.App{
+		apps[count] = app.App{
 			name,
 			files,
 		}
+		count += 1
 	}
+
+	return repo
 }
 
 /*

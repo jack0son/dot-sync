@@ -8,10 +8,11 @@ import (
 type ArgError string
 
 func (err ArgError) Error() string {
-	return fmt.Sprintf("%v", err)
+	return string(err)
 }
 
-func parseArgs(args []string, commands map[string]Command) error {
+// Parse command line arguments then call the corresponding command
+func ParseArgs(args []string, commands map[string]Command) error {
 	if len(args) == 0 {
 		return ArgError("No arguments given")
 	}
@@ -23,19 +24,21 @@ func parseArgs(args []string, commands map[string]Command) error {
 	return ArgError("Not an argument")
 }
 
+// Struct representing a command line argument and a function to call
 type Command struct {
-	name  string
-	usage string
-	fn    func(args []string) error
+	Name  string
+	Usage string
+	Fn    func(args []string) error
 }
 
 // Execute the command, passing string args
 // If there is an error with the args passed to the commmand
 // print command's usage information
 func (c *Command) run(args []string) error {
-	err := c.run(args)
+	err := c.Fn(args)
 	if cerr, ok := err.(ArgError); ok {
-		return fmt.Errorf("%v: %v\n%v", c.name, cerr, c.usage)
+		return fmt.Errorf("%v\nusage: %v %v", cerr, c.Name, c.Usage)
+		//		return fmt.Errorf("%v: %v\n%v", c.Name, cerr, c.Usage)
 	}
 
 	return err
@@ -55,7 +58,7 @@ func Add(args []string) error {
 
 func Track(args []string) error {
 	if len(args) < 2 {
-		return errors.New("")
+		return ArgError("no app name or path specified")
 	}
 
 	appName := args[1]

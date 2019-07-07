@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"github.com/jgitgud/dot-sync/cmd"
 	"os"
@@ -36,17 +35,17 @@ func main() {
 
 	commands := make(map[string]cmd.Command)
 	for _, command := range commandsList {
-		commands[command.name] = command
+		commands[command.Name] = command
 	}
 
-	//command, err := parseArgs(os.Args[1:], commands)
-	err := parseArgs(os.Args[1:], commands)
+	err := cmd.ParseArgs(os.Args[1:], commands)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "dotsync:", err)
-		if err, ok := err.(cmd.ArgError); ok {
-			fmt.Fprintf(os.Stderr, "usage:", usage)
+		// @fix this logic doesn't use ArgError correctly
+		// but the behaviour is correct for now
+		if _, ok := err.(cmd.ArgError); ok {
+			fmt.Fprintf(os.Stderr, "usage: %s\n", usage)
 		} else {
-			fmt.Fprintf(os.Stderr, "dotsync:", err)
+			fmt.Fprintf(os.Stderr, "dotsync: %s\n", err)
 		}
 		os.Exit(1)
 	}
