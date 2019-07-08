@@ -28,7 +28,8 @@ func ParseArgs(args []string, commands map[string]Command) error {
 type Command struct {
 	Name  string
 	Usage string
-	Fn    func(args []string) error
+	//Description string
+	Fn func(args []string) error
 }
 
 // Execute the command, passing string args

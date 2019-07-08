@@ -13,46 +13,6 @@ import (
 // Change to ~/.dotsync/dotsync.conf
 const conf_path = "./data/dotsync.conf"
 
-func Add(appName string, paths []string) error {
-	// 1. initialise repository from config
-	var repo *Repo
-	repoPath := loadConfig()
-
-	// @ fix rename to repoDir
-	if repoPath == "" {
-		// No existing config pointing to repo
-		// Create a new repository config file
-		repoPath, err := Init()
-		if err != nil {
-			return err
-		}
-		defer createConfig(repoPath)
-
-		repo = NewRepo(repoPath)
-		defer repo.Store()
-
-	} else {
-		// Use existing config file
-		var err error
-		repo, err = LoadRepo(repoPath)
-		if err != nil {
-			return err
-		}
-
-		// 2. if app exists return error
-		if app, ok := repo.findApp(appName); ok {
-			return fmt.Errorf("App \"%s\" already exists. Try track command.", app.Name)
-		}
-		defer repo.Store()
-	}
-
-	if err := repo.Add(appName, paths); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 /**
  * Initialise dotsync configuration by setting the repo directory
  *
@@ -76,6 +36,46 @@ func Init() (string, error) {
 	}
 
 	return path, nil
+}
+
+func Add(appName string, paths []string) error {
+	// 1. initialise repository from config
+	var repo *Repo
+	repoPath := loadConfig()
+
+	// @ fix rename to repoDir
+	if repoPath == "" {
+		// No existing config pointing to repo
+		// Create a new repository config file
+		repoPath, err := Init()
+		if err != nil {
+			return err
+		}
+		defer createConfig(repoPath)
+
+		repo = NewRepo(repoPath)
+
+	} else {
+		// Use existing config file
+		var err error
+		repo, err = LoadRepo(repoPath)
+		if err != nil {
+			return err
+		}
+
+		// 2. if app exists return error
+		if app, ok := repo.findApp(appName); ok {
+			return fmt.Errorf("App \"%s\" already exists. Try track command.", app.Name)
+		}
+	}
+
+	if err := repo.Add(appName, paths); err != nil {
+		return err
+	}
+
+	repo.Store()
+
+	return nil
 }
 
 func List() error {

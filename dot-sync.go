@@ -34,7 +34,11 @@ func main() {
 		// @fix this logic doesn't use ArgError correctly
 		// but the behaviour is correct for now
 		if _, ok := err.(cmd.ArgError); ok {
-			fmt.Fprintf(os.Stderr, "usage: %s\n", usage)
+			fmt.Fprintf(os.Stderr, "usage: %s\n\nCommands:\n", usage)
+			for _, c := range commandsList {
+				fmt.Fprintf(os.Stderr, "  - %s\n", c.Name)
+			}
+
 		} else {
 			fmt.Fprintf(os.Stderr, "dotsync: %s\n", err)
 		}
