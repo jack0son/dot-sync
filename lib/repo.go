@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-const CONFIG_FILE_NAME = "dsrepo.conf"
+const CONFIG_FILE_NAME = "dotsync.json"
 
 // Repository
 type Repo struct {
@@ -23,15 +23,16 @@ func (r *Repo) Add(appName string, paths []string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Repo dir:", r.Dir) // seg fault here is due to null ref to r
-	fmt.Printf("new app to add %v\n", *a)
 	r.apps = append(r.apps, *a)
 	return nil
 }
 
+func (r *Repo) getApps() []app.App {
+	return r.apps
+}
+
 func (r *Repo) findApp(name string) (*app.App, bool) {
 	for _, a := range r.apps {
-		fmt.Println("iterating through apps with a = ", a)
 		if a.Name == name {
 			return &a, true
 		}
@@ -45,7 +46,7 @@ func NewRepo(repoPath string) *Repo {
 	repo.Dir = repoPath
 
 	// @fix poor initialisation
-	repo.apps = make([]app.App, 32)
+	//repo.apps = make([]app.App, 0)
 
 	return repo
 }
@@ -56,7 +57,7 @@ func LoadRepo(configPath string) (*Repo, error) {
 		return nil, errors.New("could not locate config file")
 	}
 	// Load config info into repoConfig struct
-	fmt.Println(cf)
+	//fmt.Println(cf)
 
 	decoder := json.NewDecoder(cf)
 	repoConfig := new(RepoConfig)
@@ -65,9 +66,9 @@ func LoadRepo(configPath string) (*Repo, error) {
 		return nil, fmt.Errorf("Failed to decode config json: %v", err)
 	}
 
-	// Transform config into Repo struct
+	repo := repoConfig.load()
 
-	return nil, nil
+	return repo, nil
 }
 
 func (r *Repo) Store() error {
@@ -91,7 +92,7 @@ func (r *Repo) Store() error {
 		Apps: appConfigs,
 	}
 
-	rcJson, err := json.Marshal(rc)
+	rcJson, err := json.MarshalIndent(rc, "", "  ")
 	if err != nil {
 		return fmt.Errorf("Failed to marshal config json with error %v", err)
 	}
@@ -109,11 +110,11 @@ func (r *Repo) Store() error {
 
 type RepoConfig struct {
 	//repo string `json:"repo"`
-	Dir  string               `json:"dir"`
+	Dir  string               `json:"dir"` // this will change to profile
 	Apps map[string]AppConfig `json:"apps"`
 }
 
-type AppConfig = []FileConfig
+type AppConfig []FileConfig
 
 type FileConfig struct {
 	Name string `json:"name"`
@@ -121,30 +122,44 @@ type FileConfig struct {
 	//hash uint32 `json:"i"`
 }
 
-func (rc *RepoConfig) Load() *Repo {
+func (fc *FileConfig) getName() string {
+	return fc.Name
+}
+
+func (fc *FileConfig) getDir() string {
+	return fc.Dir
+}
+
+// This style contradicts app load
+func (rc *RepoConfig) load() *Repo {
 	repo := new(Repo)
 	repo.Dir = rc.Dir
 
-	apps := make([]app.App, len(rc.Apps))
-	count := 0
+	//apps := make([]app.App, len(rc.Apps))
+	var apps []app.App
 	for name, appConfig := range rc.Apps {
-
-		files := make([]app.File, len(appConfig))
-		for i, fileConfig := range appConfig {
-			file := new(app.File)
-			file.Name = fileConfig.Name
-			file.Dir = fileConfig.Dir
-			files[i] = *file
-		}
-
-		apps[count] = app.App{
-			name,
-			files,
-		}
-		count += 1
+		apps = append(apps, *appConfig.load(name))
 	}
 
+	repo.apps = apps
+
 	return repo
+}
+
+func (ac AppConfig) load(name string) *app.App {
+	a := new(app.App)
+	a.Name = name
+
+	a.Files = make([]app.File, len(ac))
+	for i, fc := range ac {
+		file := new(app.File)
+		file.Name = fc.Name
+		file.Dir = fc.Dir
+
+		a.Files[i] = *file //append(a.Files, *file)
+	}
+
+	return a
 }
 
 /*
@@ -162,6 +177,7 @@ dotsync/
 config.json
 	"repo": {
 		"dir":"~/repostiories/dotfiles/dotsync"
+		"profile": light
 		"apps" : [
 		{
 			"name": "vim",

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 )
 
+// Change to ~/.dotsync/dotsync.conf
 const conf_path = "./data/dotsync.conf"
 
 func Add(appName string, paths []string) error {
@@ -45,7 +46,6 @@ func Add(appName string, paths []string) error {
 		defer repo.Store()
 	}
 
-	fmt.Println("Calling add on repo:  ", repo)
 	if err := repo.Add(appName, paths); err != nil {
 		return err
 	}
@@ -76,6 +76,35 @@ func Init() (string, error) {
 	}
 
 	return path, nil
+}
+
+func List() error {
+	repoPath := loadConfig()
+	repo, err := LoadRepo(repoPath)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Tracked apps:")
+	for _, app := range repo.getApps() {
+		fmt.Println("  - ", app.Name)
+	}
+
+	return nil
+}
+
+func ListApp(appName string) error {
+	repoPath := loadConfig()
+	repo, err := LoadRepo(repoPath)
+	if err != nil {
+		return err
+	}
+
+	if app, ok := repo.findApp(appName); ok {
+		return fmt.Errorf("App \"%s\" already exists. Try track command.", app.Name)
+	}
+
+	return nil
 }
 
 // Load dotsync configuration file and return repo directory

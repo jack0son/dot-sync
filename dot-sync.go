@@ -15,12 +15,13 @@ import (
 
 const usage = "dotsync <command> [<args>]"
 
-type CommandMap map[string]cmd.Command
+//type CommandMap map[string]cmd.Command
 
 func main() {
 	commandsList := []cmd.Command{
-		{"track", "<app> <path> <path>...", cmd.Track},
 		{"add", "[<app>] [<paths>]", cmd.Add},
+		{"list", "[<app>]", cmd.List},
+		{"track", "<app> <path> <path>...", cmd.Track},
 	}
 
 	commands := make(map[string]cmd.Command)

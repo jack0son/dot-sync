@@ -55,6 +55,14 @@ func Add(args []string) error {
 	return lib.Add(appName, paths)
 }
 
+func List(args []string) error {
+	if len(args) > 0 {
+		return lib.ListApp(args[0])
+	}
+
+	return lib.List()
+}
+
 func Track(args []string) error {
 	if len(args) < 2 {
 		return ArgError("no app name or path specified")
@@ -68,7 +76,7 @@ func Track(args []string) error {
 
 func Sync(args []string) error {
 	if len(args) > 0 {
-		return lib.Sync(args[1])
+		return lib.Sync(args[0])
 	}
 
 	return lib.SyncAll()

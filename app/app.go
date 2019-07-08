@@ -18,6 +18,9 @@ type App struct {
 	Files []File
 }
 
+//func LoadApp(name string, fcs []lib.FileConfig) *App {
+
+// Change to LoadApp
 func NewApp(name string, paths []string) (*App, error) {
 	app := new(App)
 	for _, path := range paths {
@@ -50,6 +53,8 @@ type File struct {
 	hash     uint32
 }
 
+// Change to Load File to match Repo LoadRepo
+//func (f *File) Load(path string) (*File, error) {
 func NewFile(path string) (*File, error) {
 	// 1. attempt to read file
 	file := new(File)
@@ -71,3 +76,12 @@ func (f *File) read(path string) error {
 
 	return nil
 }
+
+/*func NewFile(path string) *File {
+	return File {
+		Name: filepath.Base(path),
+		Dir: filepath.Dir(path),
+		contents: nil,
+		hash: nil,
+	}
+}*/
