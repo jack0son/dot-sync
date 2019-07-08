@@ -4,30 +4,20 @@ import (
 	"fmt"
 	"github.com/jgitgud/dot-sync/cmd"
 	"os"
-	//"flag"
 )
 
-// dotsync track <vim> [<path>]
-// dotsync sync
-// dotsync sync vim
-// dotsync add
-// dotsync clone vim
+// Example usage:
+//  $ dotsync track <vim> [<path>]
+//  $ dotsync sync
+//  $ dotsync sync vim
+//  $ dotsync add
+//  $ dotsync clone vim
 
 const usage = "dotsync <command> [<args>]"
 
 type CommandMap map[string]cmd.Command
 
 func main() {
-
-	// On setup
-	//	- enter path to repository
-
-	// Accept adding a new app
-	// add from file apps/app
-	//	- files contains paths to files
-	//	- offer to enter any other paths
-	//	- create new dir in repository
-
 	commandsList := []cmd.Command{
 		{"track", "<app> <path> <path>...", cmd.Track},
 		{"add", "[<app>] [<paths>]", cmd.Add},
@@ -50,3 +40,12 @@ func main() {
 		os.Exit(1)
 	}
 }
+
+// --- Workflow notes / ideas ---
+// On setup
+//	- enter path to repository
+// Alternative to json config:
+// add from file apps/app
+//	- files contains paths to files
+//	- offer to enter any other paths
+//	- create new dir in repository

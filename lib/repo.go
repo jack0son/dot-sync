@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 )
 
-const CONFIG_FILE_NAME = "dotsync.conf"
+const CONFIG_FILE_NAME = "dsrepo.conf"
 
 // Repository
 type Repo struct {
@@ -18,17 +18,20 @@ type Repo struct {
 	//config RepoConfig
 }
 
-func (r *Repo) add(appName string, paths []string) error {
+func (r *Repo) Add(appName string, paths []string) error {
 	a, err := app.NewApp(appName, paths)
 	if err != nil {
 		return err
 	}
+	fmt.Printf("Repo dir:", r.Dir) // seg fault here is due to null ref to r
+	fmt.Printf("new app to add %v\n", *a)
 	r.apps = append(r.apps, *a)
 	return nil
 }
 
 func (r *Repo) findApp(name string) (*app.App, bool) {
 	for _, a := range r.apps {
+		fmt.Println("iterating through apps with a = ", a)
 		if a.Name == name {
 			return &a, true
 		}
@@ -37,25 +40,37 @@ func (r *Repo) findApp(name string) (*app.App, bool) {
 	return nil, false
 }
 
-func LoadRepo(configFile string) (*Repo, error) {
-	cf, err := os.Open(configFile)
+func NewRepo(repoPath string) *Repo {
+	repo := new(Repo)
+	repo.Dir = repoPath
+
+	// @fix poor initialisation
+	repo.apps = make([]app.App, 32)
+
+	return repo
+}
+
+func LoadRepo(configPath string) (*Repo, error) {
+	cf, err := os.Open(filepath.Join(configPath, CONFIG_FILE_NAME))
 	if err != nil {
 		return nil, errors.New("could not locate config file")
 	}
-	// Load config info into repo object
+	// Load config info into repoConfig struct
 	fmt.Println(cf)
 
 	decoder := json.NewDecoder(cf)
 	repoConfig := new(RepoConfig)
 
 	if err := decoder.Decode(repoConfig); err != nil {
-		return nil, errors.New("could not decode config json")
+		return nil, fmt.Errorf("Failed to decode config json: %v", err)
 	}
+
+	// Transform config into Repo struct
 
 	return nil, nil
 }
 
-func (r *Repo) store() error {
+func (r *Repo) Store() error {
 	// Save repo config
 	//appConfigs := make([]AppConfig, len(r.apps))
 	appConfigs := make(map[string]AppConfig)

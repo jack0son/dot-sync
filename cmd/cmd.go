@@ -38,7 +38,6 @@ func (c *Command) run(args []string) error {
 	err := c.Fn(args)
 	if cerr, ok := err.(ArgError); ok {
 		return fmt.Errorf("%v\nusage: %v %v", cerr, c.Name, c.Usage)
-		//		return fmt.Errorf("%v: %v\n%v", c.Name, cerr, c.Usage)
 	}
 
 	return err
@@ -49,7 +48,7 @@ func Add(args []string) error {
 		return ArgError("no app name specified") // not enough args
 	}
 
-	appName := args[1]
+	appName := args[0]
 	paths := args[1:]
 
 	// @fix where is add.usage
@@ -61,7 +60,7 @@ func Track(args []string) error {
 		return ArgError("no app name or path specified")
 	}
 
-	appName := args[1]
+	appName := args[0]
 	paths := args[1:]
 
 	return lib.Track(appName, paths)
