@@ -11,6 +11,21 @@ func (err ArgError) Error() string {
 	return string(err)
 }
 
+/*
+Example error from Dave Cheney
+
+// PathError records an error and the operation
+// and file path that caused it.
+type PathError struct {
+        Op   string
+        Path string
+        Err  error // the cause
+}
+
+func (e *PathError) Error() string
+
+*/
+
 // Parse command line arguments then call the corresponding command
 func ParseArgs(args []string, commands map[string]Command) error {
 	if len(args) == 0 {

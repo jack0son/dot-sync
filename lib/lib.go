@@ -54,7 +54,14 @@ func Add(appName string, paths []string) error {
 		defer createConfig(repoPath)
 
 		repo = NewRepo(repoPath)
+		/*
 
+					Move this functionality to a 'Touch' function
+
+					// TouchFile ensures path exists, or creates it using
+			// the supplied file mode.
+			func TouchFile(path string, mode os.FileMode) error
+		*/
 	} else {
 		// Use existing config file
 		var err error
